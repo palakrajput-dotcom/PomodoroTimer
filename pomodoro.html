@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated Pomodoro Timer</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f7f6; /* Light background */
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .timer-wrapper {
+            margin-bottom: 30px;
+            /* Optional: Simple circle boundary */
+            border: 5px solid #4CAF50;
+            border-radius: 50%;
+            width: 250px;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: auto;
+            margin-right: auto;
+            transition: border-color 0.5s ease; /* For smooth color change */
+        }
+
+        .timer-display {
+            font-size: 5em;
+            font-weight: bold;
+            color: #4CAF50; /* Default: Green for work time */
+            transition: color 0.5s ease;
+        }
+
+        /* CSS Class for Break Mode */
+        .break-mode {
+            color: #007bff; /* Blue color for break time */
+        }
+        
+        .timer-wrapper.break-mode-border {
+             border-color: #007bff; 
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #start-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #pause-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #reset-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+    </head>
+<body>
+
+    <div class="container">
+        <h1>⏰ Pomodoro Timer</h1>
+        <div id="timer-wrapper" class="timer-wrapper">
+            <div id="timer" class="timer-display">25:00</div>
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn">Start</button>
+            <button id="pause-btn" disabled>Pause</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+    </div>
+    <script>
+        // DOM elements ko select karna
+        const timerDisplay = document.getElementById('timer');
+        const timerWrapper = document.getElementById('timer-wrapper');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // Time variables
+        const POMODORO_TIME = 25 * 60; // 25 minutes in seconds
+        const SHORT_BREAK_TIME = 5 * 60; // 5 minutes break
+        
+        let duration = POMODORO_TIME; 
+        let intervalId = null; 
+        let currentTimeType = 'work'; // 'work' or 'break'
+
+        // Function to update the display (25:00 format)
+        function updateDisplay() {
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+
+            const formattedTime = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            timerDisplay.textContent = formattedTime;
+        }
+
+        // Function to switch between Work and Break states
+        function switchState() {
+            if (currentTimeType === 'work') {
+                // Switch to Break Time
+                currentTimeType = 'break';
+                duration = SHORT_BREAK_TIME;
+                
+                alert("Time for a 5-minute break! 🎉");
+                timerDisplay.classList.add('break-mode'); 
+                timerWrapper.classList.add('break-mode-border');
+            } else {
+                // Switch back to Work Time
+                currentTimeType = 'work';
+                duration = POMODORO_TIME;
+                
+                alert("Break is over! Time to focus. 🧠");
+                timerDisplay.classList.remove('break-mode'); 
+                timerWrapper.classList.remove('break-mode-border');
+            }
+            
+            updateDisplay();
+        }
+
+        // Function to handle the countdown
+        function countdown() {
+            if (duration > 0) {
+                duration--;
+                updateDisplay();
+            } else {
+                // Time is up -> Switch states
+                clearInterval(intervalId);
+                intervalId = null;
+                switchState(); 
+                
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+            }
+        }
+
+        // Start Button Handler
+        function startTimer() {
+            if (intervalId !== null) return; 
+
+            intervalId = setInterval(countdown, 1000); 
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+        }
+
+        // Pause Button Handler
+        function pauseTimer() {
+            clearInterval(intervalId);
+            intervalId = null;
+            startBtn.disabled = false; 
+            pauseBtn.disabled = true;
+        }
+
+        // Reset Button Handler
+        function resetTimer() {
+            pauseTimer(); 
+            // Always reset to the initial work state
+            currentTimeType = 'work'; 
+            duration = POMODORO_TIME; 
+            
+            // Remove break classes to ensure work styling is applied
+            timerDisplay.classList.remove('break-mode'); 
+            timerWrapper.classList.remove('break-mode-border');
+            
+            updateDisplay(); 
+            
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        }
+
+        // Event Listeners set karna
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        // Initial display set karna (25:00)
+        updateDisplay();
+    </script>
+    </body>
+</html>
